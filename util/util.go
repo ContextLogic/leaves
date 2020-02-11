@@ -103,19 +103,19 @@ func (p *stringParams) ToStrSlice(key string) ([]string, error) {
 	return strings.Split(valueStr, " "), nil
 }
 
-func (p *stringParams) ToFloat64Slice(key string) ([]float64, error) {
+func (p *stringParams) ToFloat32Slice(key string) ([]float32, error) {
 	valueStr, isFound := (*p)[key]
 	if !isFound {
 		return nil, fmt.Errorf("no %s field", key)
 	}
 	valuesStr := strings.Split(valueStr, " ")
-	values := make([]float64, 0, len(valuesStr))
+	values := make([]float32, 0, len(valuesStr))
 	for _, vStr := range valuesStr {
 		value, err := strconv.ParseFloat(vStr, 64)
 		if err != nil {
 			return nil, fmt.Errorf("can't convert %s: %s", key, err.Error())
 		}
-		values = append(values, value)
+		values = append(values, float32(value))
 	}
 	return values, nil
 }
@@ -217,29 +217,30 @@ func ConstructBitset(values []int) []uint32 {
 	return bitset
 }
 
-func AlmostEqualFloat64(a, b, threshold float64) bool {
-	return math.Abs(a-b) <= threshold
+func AlmostEqualFloat32(a, b, threshold float32) bool {
+	return float32(math.Abs(float64(a-b))) <= threshold
 }
 
-func AlmostEqualFloat64Slices(a, b []float64, threshold float64) error {
+func AlmostEqualFloat32Slices(a, b []float32, threshold float32) error {
 	if len(a) != len(b) {
 		return fmt.Errorf("different sizes: len(a) = %d, len(b) = %d", len(a), len(b))
 	}
 	for i := range a {
-		if math.Abs(a[i]-b[i]) > threshold {
+		if float32(math.Abs(float64(a[i]-b[i]))) > threshold {
 			return fmt.Errorf("%d element mismatch: a[%d] = %f, b[%d] = %f", i, i, a[i], i, b[i])
+
 		}
 	}
 	return nil
 }
 
-func NumMismatchedFloat64Slices(a, b []float64, threshold float64) (int, error) {
+func NumMismatchedFloat32Slices(a, b []float32, threshold float32) (int, error) {
 	if len(a) != len(b) {
 		return 0, fmt.Errorf("different sizes: len(a) = %d, len(b) = %d", len(a), len(b))
 	}
 	count := 0
 	for i := range a {
-		if math.Abs(a[i]-b[i]) > threshold {
+		if float32(math.Abs(float64(a[i]-b[i]))) > threshold {
 			count++
 		}
 	}
@@ -247,39 +248,39 @@ func NumMismatchedFloat64Slices(a, b []float64, threshold float64) (int, error) 
 }
 
 // Sigmoid applies sigmoid transformation to value
-func Sigmoid(x float64) float64 {
-	return 1.0 / (1.0 + math.Exp(-x))
+func Sigmoid(x float32) float32 {
+	return 1.0 / float32(1.0+math.Exp(-float64(x)))
 }
 
-// SigmoidFloat64SliceInplace applies sigmoid transformation to each value in slice. Inplace
-func SigmoidFloat64SliceInplace(vec []float64) {
+// SigmoidFloat32SliceInplace applies sigmoid transformation to each value in slice. Inplace
+func SigmoidFloat32SliceInplace(vec []float32) {
 	for i := range vec {
 		vec[i] = Sigmoid(vec[i])
 	}
 }
 
-func SoftmaxFloat64Slice(rawValues []float64, outputValues []float64, startIndex int) {
-	sum := 0.0
+func SoftmaxFloat32Slice(rawValues []float32, outputValues []float32, startIndex int) {
+	sum := float32(0.0)
 	for i, v := range rawValues {
-		exp := math.Exp(v)
+		exp := float32(math.Exp(float64(v)))
 		outputValues[startIndex+i] = exp
 		sum += exp
 	}
 	if sum != 0.0 {
-		inv_sum := 1.0 / sum
-		for i := startIndex; i < startIndex + len(rawValues); i++ {
+		inv_sum := float32(1.0 / sum)
+		for i := startIndex; i < startIndex+len(rawValues); i++ {
 			outputValues[i] *= inv_sum
 		}
 	}
 }
 
-// Float64FromBytes converts 8 bytes to float
-func Float64FromBytes(bytes []byte, littleEndian bool) float64 {
+// Float64From8Bytes converts 8 bytes to float
+func Float64From8Bytes(bytes []byte, littleEndian bool) float32 {
 	var bits uint64
 	if littleEndian {
 		bits = binary.LittleEndian.Uint64(bytes)
 	} else {
 		bits = binary.BigEndian.Uint64(bytes)
 	}
-	return math.Float64frombits(bits)
+	return float32(math.Float64frombits(bits))
 }

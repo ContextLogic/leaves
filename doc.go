@@ -43,9 +43,9 @@ predict_breast_cancer_model.go:
 	import (
 		"fmt"
 
-		"github.com/dmitryikh/leaves"
-		"github.com/dmitryikh/leaves/mat"
-		"github.com/dmitryikh/leaves/util"
+		"github.com/ContextLogic/leaves"
+		"github.com/ContextLogic/leaves/mat"
+		"github.com/ContextLogic/leaves/util"
 	)
 
 	func main() {
@@ -77,19 +77,19 @@ predict_breast_cancer_model.go:
 		}
 
 		// preallocate slice to store model predictions
-		predictions := make([]float64, test.Rows*model.NOutputGroups())
+		predictions := make([]float32, test.Rows*model.NOutputGroups())
 		// do predictions
 		model.PredictDense(test.Values, test.Rows, test.Cols, predictions, 0, 1)
 		// compare results
 		const tolerance = 1e-6
-		if err := util.AlmostEqualFloat64Slices(truePredictions.Values, predictions, tolerance); err != nil {
+		if err := util.AlmostEqualFloat32Slices(truePredictions.Values, predictions, tolerance); err != nil {
 			panic(fmt.Errorf("different predictions: %s", err.Error()))
 		}
 
 		// compare raw predictions (before transformation function)
 		rawModel := model.EnsembleWithRawPredictions()
 		rawModel.PredictDense(test.Values, test.Rows, test.Cols, predictions, 0, 1)
-		if err := util.AlmostEqualFloat64Slices(truePredictionsRaw.Values, predictions, tolerance); err != nil {
+		if err := util.AlmostEqualFloat32Slices(truePredictionsRaw.Values, predictions, tolerance); err != nil {
 			panic(fmt.Errorf("different raw predictions: %s", err.Error()))
 		}
 		fmt.Println("Predictions the same!")
@@ -141,9 +141,9 @@ predict_iris_model.go:
 	import (
 		"fmt"
 
-		"github.com/dmitryikh/leaves"
-		"github.com/dmitryikh/leaves/mat"
-		"github.com/dmitryikh/leaves/util"
+		"github.com/ContextLogic/leaves"
+		"github.com/ContextLogic/leaves/mat"
+		"github.com/ContextLogic/leaves/util"
 	)
 
 	func main() {
@@ -170,14 +170,14 @@ predict_iris_model.go:
 		}
 
 		// preallocate slice to store model predictions
-		predictions := make([]float64, csr.Rows()*model.NOutputGroups())
+		predictions := make([]float32, csr.Rows()*model.NOutputGroups())
 		// do predictions
 		model.PredictCSR(csr.RowHeaders, csr.ColIndexes, csr.Values, predictions, 0, 1)
 		// compare results
 		const tolerance = 1e-6
 		// compare results. Count number of mismatched values beacase of floating point
 		// tolerances in decision rule
-		mismatch, err := util.NumMismatchedFloat64Slices(truePredictions.Values, predictions, tolerance)
+		mismatch, err := util.NumMismatchedFloat32Slices(truePredictions.Values, predictions, tolerance)
 		if err != nil {
 			panic(err)
 		}

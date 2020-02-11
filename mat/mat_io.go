@@ -11,7 +11,7 @@ import (
 
 type libsvmRecord struct {
 	column int
-	value  float64
+	value  float32
 }
 
 type libsvmRowFunc func(records []libsvmRecord) error
@@ -80,7 +80,7 @@ func DenseMatFromCsv(reader *bufio.Reader,
 	limit int,
 	skipFirstColumn bool,
 	delimiter string,
-	defValue float64,
+	defValue float32,
 ) (*DenseMat, error) {
 
 	mat := &DenseMat{}
@@ -102,7 +102,7 @@ func DenseMatFromCsvFile(filename string,
 	limit int,
 	skipFirstColumn bool,
 	delimiter string,
-	defValue float64,
+	defValue float32,
 ) (*DenseMat, error) {
 	reader, err := os.Open(filename)
 	if err != nil {
@@ -176,7 +176,7 @@ func readFromLibsvm(reader *bufio.Reader, limit int, skipFirstColumn bool, f lib
 			if err != nil {
 				return fmt.Errorf("can't convert to float %s: %s", pair[1], err.Error())
 			}
-			records = append(records, libsvmRecord{column, value})
+			records = append(records, libsvmRecord{column, float32(value)})
 		}
 
 		err = f(records)
@@ -196,7 +196,7 @@ func readFromCsv(reader *bufio.Reader,
 	limit int,
 	skipFirstColumn bool,
 	delimiter string,
-	defValue float64,
+	defValue float32,
 	f libsvmRowFunc,
 ) error {
 	records := make([]libsvmRecord, 0)
@@ -218,7 +218,7 @@ func readFromCsv(reader *bufio.Reader,
 
 		records = records[:0]
 		for col := startIndex; col < len(tokens); col++ {
-			var value float64
+			var value float32
 			if len(tokens[col]) == 0 {
 				value = defValue
 			} else {
@@ -226,7 +226,7 @@ func readFromCsv(reader *bufio.Reader,
 				if err != nil {
 					return fmt.Errorf("can't convert to float %s: %s", tokens[col], err.Error())
 				}
-				value = fvalue
+				value = float32(fvalue)
 			}
 			records = append(records, libsvmRecord{col - startIndex, value})
 		}

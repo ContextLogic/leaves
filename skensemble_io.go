@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dmitryikh/leaves/internal/pickle"
-	"github.com/dmitryikh/leaves/transformation"
+	"github.com/ContextLogic/leaves/internal/pickle"
+	"github.com/ContextLogic/leaves/transformation"
 )
 
-func lgTreeFromSklearnDecisionTreeRegressor(tree pickle.SklearnDecisionTreeRegressor, scale float64, base float64) (lgTree, error) {
+func lgTreeFromSklearnDecisionTreeRegressor(tree pickle.SklearnDecisionTreeRegressor, scale float32, base float32) (lgTree, error) {
 	t := lgTree{}
 	// no support for categorical features in sklearn trees
 	t.nCategorical = 0
@@ -144,7 +144,7 @@ func SKEnsembleFromReader(reader *bufio.Reader, loadTransformation bool) (*Ensem
 	}
 
 	scale := gbdt.LearningRate
-	base := make([]float64, e.nRawOutputGroups)
+	base := make([]float32, e.nRawOutputGroups)
 	if gbdt.InitEstimator.Name == "LogOddsEstimator" {
 		for i := 0; i < e.nRawOutputGroups; i++ {
 			base[i] = gbdt.InitEstimator.Prior[0]

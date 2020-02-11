@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/dmitryikh/leaves/util"
+	"github.com/ContextLogic/leaves/util"
 )
 
 func TestDenseMatFromLibsvm(t *testing.T) {
@@ -36,8 +36,8 @@ func TestDenseMatFromLibsvm(t *testing.T) {
 	if mat.Rows != 2 {
 		t.Errorf("mat.Rows should be 2 (got %d)", mat.Rows)
 	}
-	trueValues := []float64{19.0, 45.3, 1e-6, 14.0, 0.0, 0.0}
-	if err := util.AlmostEqualFloat64Slices(mat.Values, trueValues, 1e-10); err != nil {
+	trueValues := []float32{19.0, 45.3, 1e-6, 14.0, 0.0, 0.0}
+	if err := util.AlmostEqualFloat32Slices(mat.Values, trueValues, 1e-10); err != nil {
 		t.Errorf("mat.Values incorrect: %s", err.Error())
 	}
 
@@ -54,8 +54,8 @@ func TestDenseMatFromLibsvm(t *testing.T) {
 	if mat.Rows != 1 {
 		t.Errorf("mat.Rows should be 1 (got %d)", mat.Rows)
 	}
-	trueValues = []float64{19.0, 45.3, 1e-6}
-	if err := util.AlmostEqualFloat64Slices(mat.Values, trueValues, 1e-10); err != nil {
+	trueValues = []float32{19.0, 45.3, 1e-6}
+	if err := util.AlmostEqualFloat32Slices(mat.Values, trueValues, 1e-10); err != nil {
 		t.Errorf("mat.Values incorrect: %s", err.Error())
 	}
 }
@@ -81,8 +81,8 @@ func TestCSRMatFromLibsvm(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	trueValues := []float64{19.0, 45.3, 1e-6, 14.0, 0.0}
-	if err := util.AlmostEqualFloat64Slices(mat.Values, trueValues, 1e-10); err != nil {
+	trueValues := []float32{19.0, 45.3, 1e-6, 14.0, 0.0}
+	if err := util.AlmostEqualFloat32Slices(mat.Values, trueValues, 1e-10); err != nil {
 		t.Errorf("mat.Values incorrect: %s", err.Error())
 	}
 
@@ -104,8 +104,8 @@ func TestCSRMatFromLibsvm(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	trueValues = []float64{19.0, 45.3, 1e-6}
-	if err := util.AlmostEqualFloat64Slices(mat.Values, trueValues, 1e-10); err != nil {
+	trueValues = []float32{19.0, 45.3, 1e-6}
+	if err := util.AlmostEqualFloat32Slices(mat.Values, trueValues, 1e-10); err != nil {
 		t.Errorf("mat.Values incorrect: %s", err.Error())
 	}
 

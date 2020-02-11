@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dmitryikh/leaves/internal/xgbin"
-	"github.com/dmitryikh/leaves/transformation"
+	"github.com/ContextLogic/leaves/internal/xgbin"
+	"github.com/ContextLogic/leaves/transformation"
 )
 
 // XGBLinearFromReader reads  XGBoost's 'gblinear' model from `reader`
@@ -24,7 +24,7 @@ func XGBLinearFromReader(reader *bufio.Reader, loadTransformation bool) (*Ensemb
 	if header.Param.NumFeatures == 0 {
 		return nil, fmt.Errorf("zero number of features")
 	}
-	e.BaseScore = float64(header.Param.BaseScore)
+	e.BaseScore = float32(header.Param.BaseScore)
 
 	gbLinearModel, err := xgbin.ReadGBLinearModel(reader)
 	if err != nil {

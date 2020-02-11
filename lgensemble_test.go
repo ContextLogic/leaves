@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/dmitryikh/leaves/util"
+	"github.com/ContextLogic/leaves/util"
 )
 
 func TestReadLGTree(t *testing.T) {
@@ -35,8 +35,8 @@ func TestReadLGTree(t *testing.T) {
 	if tree.nCategorical != 1 {
 		t.Fatalf("tree.nCategorical != 1 (got %d)", tree.nCategorical)
 	}
-	trueLeavesValues := []float64{0.56697267424823339, 0.3584987837673016, 0.41213915936587919}
-	if err := util.AlmostEqualFloat64Slices(tree.leafValues, trueLeavesValues, 1e-10); err != nil {
+	trueLeavesValues := []float32{0.56697267424823339, 0.3584987837673016, 0.41213915936587919}
+	if err := util.AlmostEqualFloat32Slices(tree.leafValues, trueLeavesValues, 1e-10); err != nil {
 		t.Fatalf("tree.leavesValues incorrect: %s", err.Error())
 	}
 	if tree.nodes[0].Flags&categorical == 0 {
@@ -97,10 +97,10 @@ func TestLGTreeLeaf1(t *testing.T) {
 		t.Fatalf("expected tree with 0 node (got %d)", tree.nNodes())
 	}
 
-	fvals := []float64{0.0}
-	check := func(truePred float64) {
+	fvals := []float32{0.0}
+	check := func(truePred float32) {
 		p := tree.predict(fvals)
-		if !util.AlmostEqualFloat64(p, truePred, 1e-3) {
+		if !util.AlmostEqualFloat32(p, truePred, 1e-3) {
 			t.Errorf("expected prediction %f, got %f", truePred, p)
 		}
 	}
@@ -110,7 +110,7 @@ func TestLGTreeLeaf1(t *testing.T) {
 	check(0.123)
 	fvals[0] = -10.0
 	check(0.123)
-	fvals[0] = math.NaN()
+	fvals[0] = float32(math.NaN())
 	check(0.123)
 }
 
@@ -134,10 +134,10 @@ func TestLGTreeLeaves2(t *testing.T) {
 		t.Fatalf("expected tree with 1 node (got %d)", tree.nNodes())
 	}
 
-	fvals := []float64{0.0}
-	check := func(truePred float64) {
+	fvals := []float32{0.0}
+	check := func(truePred float32) {
 		p := tree.predict(fvals)
-		if !util.AlmostEqualFloat64(p, truePred, 1e-3) {
+		if !util.AlmostEqualFloat32(p, truePred, 1e-3) {
 			t.Errorf("expected prediction %f, got %f", truePred, p)
 		}
 	}
@@ -145,7 +145,7 @@ func TestLGTreeLeaves2(t *testing.T) {
 	check(0.43)
 	fvals[0] = 5.1
 	check(0.59)
-	fvals[0] = math.NaN()
+	fvals[0] = float32(math.NaN())
 	check(0.43)
 }
 
@@ -169,10 +169,10 @@ func TestLGTreeLeaves3(t *testing.T) {
 		t.Fatalf("expected tree with 2 node (got %d)", tree.nNodes())
 	}
 
-	fvals := []float64{0.0, 0.0}
-	check := func(truePred float64) {
+	fvals := []float32{0.0, 0.0}
+	check := func(truePred float32) {
 		p := tree.predict(fvals)
-		if !util.AlmostEqualFloat64(p, truePred, 1e-3) {
+		if !util.AlmostEqualFloat32(p, truePred, 1e-3) {
 			t.Errorf("expected prediction %f, got %f", truePred, p)
 		}
 	}
@@ -180,7 +180,7 @@ func TestLGTreeLeaves3(t *testing.T) {
 	check(0.35)
 	fvals[0] = 1000.0
 	check(0.38)
-	fvals[0] = math.NaN()
+	fvals[0] = float32(math.NaN())
 	check(0.35)
 	fvals[1] = 10.0
 	check(0.35)
@@ -198,30 +198,30 @@ func TestLGEnsemble(t *testing.T) {
 		t.Fatalf("expected 2 trees (got %d)", model.NEstimators())
 	}
 
-	denseValues := []float64{0.0, 0.0,
+	denseValues := []float32{0.0, 0.0,
 		1000.0, 0.0,
 		800.0, 0.0,
 		800.0, 100,
 		0.0, 100,
-		1000, math.NaN(),
-		math.NaN(), math.NaN(),
+		1000, float32(math.NaN()),
+		float32(math.NaN()), float32(math.NaN()),
 	}
 
 	denseRows := 7
 	denseCols := 2
 
 	// check predictions
-	predictions := make([]float64, denseRows)
+	predictions := make([]float32, denseRows)
 	model.PredictDense(denseValues, denseRows, denseCols, predictions, 0, 0)
-	truePredictions := []float64{0.29462594, 0.39565483, 0.39565483, 0.69580371, 0.69580371, 0.39565483, 0.29462594}
-	if err := util.AlmostEqualFloat64Slices(predictions, truePredictions, 1e-7); err != nil {
+	truePredictions := []float32{0.29462594, 0.39565483, 0.39565483, 0.69580371, 0.69580371, 0.39565483, 0.29462594}
+	if err := util.AlmostEqualFloat32Slices(predictions, truePredictions, 1e-7); err != nil {
 		t.Fatalf("predictions on dense not correct (all trees): %s", err.Error())
 	}
 
 	// check prediction only on first tree
 	model.PredictDense(denseValues, denseRows, denseCols, predictions, 1, 0)
-	truePredictions = []float64{0.35849878, 0.41213916, 0.41213916, 0.56697267, 0.56697267, 0.41213916, 0.35849878}
-	if err := util.AlmostEqualFloat64Slices(predictions, truePredictions, 1e-7); err != nil {
+	truePredictions = []float32{0.35849878, 0.41213916, 0.41213916, 0.56697267, 0.56697267, 0.41213916, 0.35849878}
+	if err := util.AlmostEqualFloat32Slices(predictions, truePredictions, 1e-7); err != nil {
 		t.Fatalf("predictions on dense not correct (all trees): %s", err.Error())
 	}
 }
@@ -250,7 +250,7 @@ func TestLGEnsembleJSON1tree1leaf(t *testing.T) {
 		t.Fatalf("expected 41 class (got %d)", model.NFeatures())
 	}
 
-	features := make([]float64, model.NFeatures())
+	features := make([]float32, model.NFeatures())
 	pred := model.PredictSingle(features, 0)
 	if pred != 0.42 {
 		t.Fatalf("expected prediction 0.42 (got %f)", pred)
@@ -281,19 +281,19 @@ func TestLGEnsembleJSON1tree(t *testing.T) {
 		t.Fatalf("expected 2 class (got %d)", model.NFeatures())
 	}
 
-	check := func(features []float64, trueAnswer float64) {
+	check := func(features []float32, trueAnswer float32) {
 		pred := model.PredictSingle(features, 0)
 		if pred != trueAnswer {
 			t.Fatalf("expected prediction %f (got %f)", trueAnswer, pred)
 		}
 	}
 
-	check([]float64{0.0, 0.0}, 0.4242)
-	check([]float64{0.0, 11.0}, 0.4242)
-	check([]float64{0.13, 11.0}, 0.4242)
-	check([]float64{0.0, 1.0}, 0.4703)
-	check([]float64{0.0, 10.0}, 0.4703)
-	check([]float64{0.0, 100.0}, 0.4703)
-	check([]float64{0.15, 0.0}, 1.1111)
-	check([]float64{0.15, 11.0}, 1.1111)
+	check([]float32{0.0, 0.0}, 0.4242)
+	check([]float32{0.0, 11.0}, 0.4242)
+	check([]float32{0.13, 11.0}, 0.4242)
+	check([]float32{0.0, 1.0}, 0.4703)
+	check([]float32{0.0, 10.0}, 0.4703)
+	check([]float32{0.0, 100.0}, 0.4703)
+	check([]float32{0.15, 0.0}, 1.1111)
+	check([]float32{0.15, 11.0}, 1.1111)
 }

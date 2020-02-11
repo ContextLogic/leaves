@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/dmitryikh/leaves/util"
+	"github.com/ContextLogic/leaves/util"
 )
 
 // SklearnNode represents tree node data structure
@@ -12,16 +12,16 @@ type SklearnNode struct {
 	LeftChild            int
 	RightChild           int
 	Feature              int
-	Threshold            float64
-	Impurity             float64
+	Threshold            float32
+	Impurity             float32
 	NNodeSamples         int
-	WeightedNNodeSamples float64
+	WeightedNNodeSamples float32
 }
 
 // SklearnNodeFromBytes converts 56 raw bytes into SklearnNode struct
 // The rule described in https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/tree/_tree.pyx#L70 (NODE_DTYPE)
 // 'names': ['left_child', 'right_child', 'feature', 'threshold', 'impurity', 'n_node_samples', 'weighted_n_node_samples'],
-// 'formats': [np.intp, np.intp, np.intp, np.float64, np.float64, np.intp, np.float64]
+// 'formats': [np.intp, np.intp, np.intp, np.float32, np.float32, np.intp, np.float32]
 func SklearnNodeFromBytes(bytes []byte) SklearnNode {
 	offset := 0
 	size := 8
@@ -32,13 +32,13 @@ func SklearnNodeFromBytes(bytes []byte) SklearnNode {
 	offset += size
 	node.Feature = int(binary.LittleEndian.Uint64(bytes[offset : offset+size]))
 	offset += size
-	node.Threshold = util.Float64FromBytes(bytes[offset:offset+size], true)
+	node.Threshold = util.Float64From8Bytes(bytes[offset:offset+size], true)
 	offset += size
-	node.Impurity = util.Float64FromBytes(bytes[offset:offset+size], true)
+	node.Impurity = util.Float64From8Bytes(bytes[offset:offset+size], true)
 	offset += size
 	node.NNodeSamples = int(binary.LittleEndian.Uint64(bytes[offset : offset+size]))
 	offset += size
-	node.WeightedNNodeSamples = util.Float64FromBytes(bytes[offset:offset+size], true)
+	node.WeightedNNodeSamples = util.Float64From8Bytes(bytes[offset:offset+size], true)
 	return node
 }
 
@@ -48,7 +48,7 @@ type SklearnTree struct {
 	Classes  []int
 	NNodes   int
 	Nodes    []SklearnNode
-	Values   []float64
+	Values   []float32
 }
 
 func (t *SklearnTree) Reduce(reduce Reduce) (err error) {
@@ -131,7 +131,7 @@ func (t *SklearnTree) Build(build Build) (err error) {
 		return fmt.Errorf("expected ndtype \"f8\" (got: %#v)", arr.Type)
 	}
 	err = arr.Data.Iterate(8, func(b []byte) error {
-		t.Values = append(t.Values, util.Float64FromBytes(b, arr.Type.LittleEndinan))
+		t.Values = append(t.Values, util.Float64From8Bytes(b, arr.Type.LittleEndinan))
 		return nil
 	})
 	if err != nil {
@@ -206,7 +206,7 @@ type SklearnGradientBoosting struct {
 	NEstimators   int
 	MaxFeatures   int
 	Estimators    []SklearnDecisionTreeRegressor
-	LearningRate  float64
+	LearningRate  float32
 	InitEstimator SKlearnInitEstimator
 }
 
@@ -235,10 +235,11 @@ func (t *SklearnGradientBoosting) Build(build Build) (err error) {
 		return
 	}
 
-	t.LearningRate, err = dict.toFloat("learning_rate")
+	lr64, err := dict.toFloat("learning_rate")
 	if err != nil {
 		return
 	}
+	t.LearningRate = float32(lr64)
 
 	obj, err := dict.value("loss")
 	if err != nil {
@@ -326,7 +327,7 @@ func (t *SklearnGradientBoosting) Build(build Build) (err error) {
 
 type SKlearnInitEstimator struct {
 	Name  string
-	Prior []float64
+	Prior []float32
 }
 
 func (e *SKlearnInitEstimator) Reduce(reduce Reduce) (err error) {
@@ -363,7 +364,7 @@ func (e *SKlearnInitEstimator) Build(build Build) (err error) {
 		if numpyScalar.Type.Type != "f8" {
 			return fmt.Errorf("expected f8, got (%#v)", numpyScalar.Type)
 		}
-		e.Prior = append(e.Prior, util.Float64FromBytes(numpyScalar.Data, numpyScalar.Type.LittleEndinan))
+		e.Prior = append(e.Prior, util.Float64From8Bytes(numpyScalar.Data, numpyScalar.Type.LittleEndinan))
 	} else if e.Name == "PriorProbabilityEstimator" {
 		dict, err := toDict(build.Args)
 		if err != nil {
@@ -382,7 +383,7 @@ func (e *SKlearnInitEstimator) Build(build Build) (err error) {
 			return fmt.Errorf("expected f8, got (%#v)", numpyArray.Type)
 		}
 		numpyArray.Data.Iterate(8, func(bytes []byte) error {
-			e.Prior = append(e.Prior, util.Float64FromBytes(bytes, numpyArray.Type.LittleEndinan))
+			e.Prior = append(e.Prior, util.Float64From8Bytes(bytes, numpyArray.Type.LittleEndinan))
 			return nil
 		})
 	} else {

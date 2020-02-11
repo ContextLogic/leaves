@@ -4,7 +4,7 @@ package leaves
 type xgLinear struct {
 	NumFeature       int
 	nRawOutputGroups int
-	BaseScore        float64
+	BaseScore        float32
 	Weights          []float32
 }
 
@@ -29,16 +29,16 @@ func (e *xgLinear) Name() string {
 	return "xgboost.gblinear"
 }
 
-func (e *xgLinear) predictInner(fvals []float64, nIterations int, predictions []float64, startIndex int) {
+func (e *xgLinear) predictInner(fvals []float32, nIterations int, predictions []float32, startIndex int) {
 	for k := 0; k < e.nRawOutputGroups; k++ {
-		predictions[startIndex+k] = e.BaseScore + float64(e.Weights[e.nRawOutputGroups*e.NumFeature+k])
+		predictions[startIndex+k] = e.BaseScore + float32(e.Weights[e.nRawOutputGroups*e.NumFeature+k])
 		for i := 0; i < e.NumFeature; i++ {
-			predictions[startIndex+k] += fvals[i] * float64(e.Weights[e.nRawOutputGroups*i+k])
+			predictions[startIndex+k] += fvals[i] * float32(e.Weights[e.nRawOutputGroups*i+k])
 		}
 	}
 }
 
-func (e *xgLinear) resetFVals(fvals []float64) {
+func (e *xgLinear) resetFVals(fvals []float32) {
 	for j := 0; j < len(fvals); j++ {
 		fvals[j] = 0.0
 	}

@@ -1,7 +1,7 @@
 package leaves
 
 import (
-	"github.com/dmitryikh/leaves/util"
+	"github.com/ContextLogic/leaves/util"
 )
 
 // lgEnsemble is LightGBM model (ensemble of trees)
@@ -37,13 +37,13 @@ func (e *lgEnsemble) Name() string {
 	return e.name
 }
 
-func (e *lgEnsemble) predictInner(fvals []float64, nEstimators int, predictions []float64, startIndex int) {
+func (e *lgEnsemble) predictInner(fvals []float32, nEstimators int, predictions []float32, startIndex int) {
 	for k := 0; k < e.nRawOutputGroups; k++ {
 		predictions[startIndex+k] = 0.0
 	}
-	coef := 1.0
+	coef := float32(1.0)
 	if e.averageOutput {
-		coef = 1.0 / float64(nEstimators)
+		coef = 1.0 / float32(nEstimators)
 	}
 	for i := 0; i < nEstimators; i++ {
 		for k := 0; k < e.nRawOutputGroups; k++ {
@@ -61,7 +61,7 @@ func (e *lgEnsemble) adjustNEstimators(nEstimators int) int {
 	return nEstimators
 }
 
-func (e *lgEnsemble) resetFVals(fvals []float64) {
+func (e *lgEnsemble) resetFVals(fvals []float32) {
 	for j := 0; j < len(fvals); j++ {
 		fvals[j] = 0.0
 	}

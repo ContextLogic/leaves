@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/dmitryikh/leaves/mat"
-	"github.com/dmitryikh/leaves/transformation"
-	"github.com/dmitryikh/leaves/util"
+	"github.com/ContextLogic/leaves/mat"
+	"github.com/ContextLogic/leaves/transformation"
+	"github.com/ContextLogic/leaves/util"
 )
 
 func isFileExists(filename string) bool {
@@ -66,11 +66,11 @@ func InnerTestLGMSLTR(t *testing.T, nThreads int) {
 	}
 
 	// do predictions
-	predictions := make([]float64, csr.Rows())
+	predictions := make([]float32, csr.Rows())
 	model.PredictCSR(csr.RowHeaders, csr.ColIndexes, csr.Values, predictions, 0, nThreads)
 
 	// compare results
-	if err := util.AlmostEqualFloat64Slices(truePredictions.Values, predictions, 1e-5); err != nil {
+	if err := util.AlmostEqualFloat32Slices(truePredictions.Values, predictions, 1e-5); err != nil {
 		t.Fatalf("different predictions: %s", err.Error())
 	}
 }
@@ -141,7 +141,7 @@ func TestXGHiggs(t *testing.T) {
 	InnerTestHiggs(t, modelWithTransformation, 4, false, truePath, tolerance)
 }
 
-func InnerTestHiggs(t *testing.T, model *Ensemble, nThreads int, isDense bool, truePredictionsFilename string, tolerance float64) {
+func InnerTestHiggs(t *testing.T, model *Ensemble, nThreads int, isDense bool, truePredictionsFilename string, tolerance float32) {
 	// loading test data
 	testPath := filepath.Join("testdata", "higgs_1000examples_test.libsvm")
 	skipTestIfFileNotExist(t, testPath)
@@ -170,7 +170,7 @@ func InnerTestHiggs(t *testing.T, model *Ensemble, nThreads int, isDense bool, t
 		t.Fatal(err)
 	}
 
-	predictions := make([]float64, nRows)
+	predictions := make([]float32, nRows)
 	if isDense {
 		model.PredictDense(dense.Values, dense.Rows, dense.Cols, predictions, 0, nThreads)
 	} else {
@@ -179,7 +179,7 @@ func InnerTestHiggs(t *testing.T, model *Ensemble, nThreads int, isDense bool, t
 	// compare results. Count number of mismatched values beacase of floating point
 	// comparisons problems: fval < thresholds.
 	// I think this is because float32 format inside of XGBoost Binary format
-	count, err := util.NumMismatchedFloat64Slices(truePredictions.Values, predictions, tolerance)
+	count, err := util.NumMismatchedFloat32Slices(truePredictions.Values, predictions, tolerance)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -193,19 +193,19 @@ func InnerTestHiggs(t *testing.T, model *Ensemble, nThreads int, isDense bool, t
 		singleIdx := 100
 		fvals := dense.Values[singleIdx*dense.Cols : (singleIdx+1)*dense.Cols]
 		prediction := model.PredictSingle(fvals, 0)
-		if err := util.AlmostEqualFloat64Slices([]float64{truePredictions.Values[singleIdx]}, []float64{prediction}, tolerance); err != nil {
+		if err := util.AlmostEqualFloat32Slices([]float32{truePredictions.Values[singleIdx]}, []float32{prediction}, tolerance); err != nil {
 			t.Errorf("different PredictSingle prediction: %s", err.Error())
 		}
 
 		// check Predict
 		singleIdx = 200
 		fvals = dense.Values[singleIdx*dense.Cols : (singleIdx+1)*dense.Cols]
-		predictions := make([]float64, 1)
+		predictions := make([]float32, 1)
 		err := model.Predict(fvals, 0, predictions)
 		if err != nil {
 			t.Errorf("error while call model.Predict: %s", err.Error())
 		}
-		if err := util.AlmostEqualFloat64Slices([]float64{truePredictions.Values[singleIdx]}, predictions, tolerance); err != nil {
+		if err := util.AlmostEqualFloat32Slices([]float32{truePredictions.Values[singleIdx]}, predictions, tolerance); err != nil {
 			t.Errorf("different Predict prediction: %s", err.Error())
 		}
 	}
@@ -237,7 +237,7 @@ func InnerBenchmarkLGMSLTR(b *testing.B, nThreads int) {
 
 	// do benchmark
 	b.ResetTimer()
-	predictions := make([]float64, csr.Rows())
+	predictions := make([]float32, csr.Rows())
 	for i := 0; i < b.N; i++ {
 		model.PredictCSR(csr.RowHeaders, csr.ColIndexes, csr.Values, predictions, 0, nThreads)
 	}
@@ -326,19 +326,19 @@ func InnerTestXGAgaricus(t *testing.T, nThreads int) {
 	}
 
 	// do predictions with transformation inside
-	predictions := make([]float64, csr.Rows()*model.NOutputGroups())
+	predictions := make([]float32, csr.Rows()*model.NOutputGroups())
 	model.PredictCSR(csr.RowHeaders, csr.ColIndexes, csr.Values, predictions, 0, nThreads)
 	// compare results
-	if err := util.AlmostEqualFloat64Slices(truePredictions.Values, predictions, 1e-7); err != nil {
+	if err := util.AlmostEqualFloat32Slices(truePredictions.Values, predictions, 1e-7); err != nil {
 		t.Fatalf("different predictions: %s", err.Error())
 	}
 
 	// do raw predictions with transformation outside
 	rawModel := model.EnsembleWithRawPredictions()
 	rawModel.PredictCSR(csr.RowHeaders, csr.ColIndexes, csr.Values, predictions, 0, nThreads)
-	util.SigmoidFloat64SliceInplace(predictions)
+	util.SigmoidFloat32SliceInplace(predictions)
 	// compare results
-	if err := util.AlmostEqualFloat64Slices(truePredictions.Values, predictions, 1e-7); err != nil {
+	if err := util.AlmostEqualFloat32Slices(truePredictions.Values, predictions, 1e-7); err != nil {
 		t.Fatalf("different predictions: %s", err.Error())
 	}
 }
@@ -381,10 +381,10 @@ func InnerTestXGBLinAgaricus(t *testing.T, loadTransformation bool, nThreads int
 	}
 
 	// do predictions
-	predictions := make([]float64, csr.Rows())
+	predictions := make([]float32, csr.Rows())
 	model.PredictCSR(csr.RowHeaders, csr.ColIndexes, csr.Values, predictions, 0, nThreads)
 	// compare results
-	if err := util.AlmostEqualFloat64Slices(truePredictions.Values, predictions, 1e-5); err != nil {
+	if err := util.AlmostEqualFloat32Slices(truePredictions.Values, predictions, 1e-5); err != nil {
 		t.Fatalf("different predictions: %s", err.Error())
 	}
 }
@@ -412,10 +412,10 @@ func InnerTestXGBLinRawAgaricus(t *testing.T, nThreads int) {
 	}
 
 	// do predictions
-	predictions := make([]float64, csr.Rows())
+	predictions := make([]float32, csr.Rows())
 	model.PredictCSR(csr.RowHeaders, csr.ColIndexes, csr.Values, predictions, 0, nThreads)
 	// compare results
-	if err := util.AlmostEqualFloat64Slices(truePredictions.Values, predictions, 1e-5); err != nil {
+	if err := util.AlmostEqualFloat32Slices(truePredictions.Values, predictions, 1e-5); err != nil {
 		t.Fatalf("different predictions: %s", err.Error())
 	}
 }
@@ -476,7 +476,7 @@ func InnerBenchmarkHiggs(b *testing.B, model *Ensemble, nThreads int, isDense bo
 
 	// do benchmark
 	b.ResetTimer()
-	predictions := make([]float64, nRows)
+	predictions := make([]float32, nRows)
 	if isDense {
 		for i := 0; i < b.N; i++ {
 			model.PredictDense(dense.Values, dense.Rows, dense.Cols, predictions, 0, nThreads)
@@ -532,23 +532,23 @@ func InnerTestLGMulticlass(t *testing.T, loadTransformation bool, nThreads int) 
 	}
 
 	// do predictions
-	predictions := make([]float64, dense.Rows*model.NOutputGroups())
+	predictions := make([]float32, dense.Rows*model.NOutputGroups())
 	model.PredictDense(dense.Values, dense.Rows, dense.Cols, predictions, 0, nThreads)
 	// compare results
-	const tolerance = 1e-7
-	if err := util.AlmostEqualFloat64Slices(truePredictions.Values, predictions, tolerance); err != nil {
+	const tolerance = 1e-6
+	if err := util.AlmostEqualFloat32Slices(truePredictions.Values, predictions, tolerance); err != nil {
 		t.Errorf("different predictions: %s", err.Error())
 	}
 
 	// check Predict
 	singleIdx := 200
 	fvals := dense.Values[singleIdx*dense.Cols : (singleIdx+1)*dense.Cols]
-	predictions = make([]float64, model.NOutputGroups())
+	predictions = make([]float32, model.NOutputGroups())
 	err = model.Predict(fvals, 0, predictions)
 	if err != nil {
 		t.Errorf("error while call model.Predict: %s", err.Error())
 	}
-	if err := util.AlmostEqualFloat64Slices(truePredictions.Values[singleIdx*model.NOutputGroups():(singleIdx+1)*model.NOutputGroups()], predictions, tolerance); err != nil {
+	if err := util.AlmostEqualFloat32Slices(truePredictions.Values[singleIdx*model.NOutputGroups():(singleIdx+1)*model.NOutputGroups()], predictions, tolerance); err != nil {
 		t.Errorf("different Predict prediction: %s", err.Error())
 	}
 }
@@ -593,11 +593,11 @@ func InnerTestXGDermatology(t *testing.T, nThreads int) {
 	}
 
 	// do predictions
-	predictions := make([]float64, csr.Rows()*model.NOutputGroups())
+	predictions := make([]float32, csr.Rows()*model.NOutputGroups())
 	model.PredictCSR(csr.RowHeaders, csr.ColIndexes, csr.Values, predictions, 0, nThreads)
 	// compare results
 	const tolerance = 1e-6
-	if err := util.AlmostEqualFloat64Slices(truePredictions.Values, predictions, tolerance); err != nil {
+	if err := util.AlmostEqualFloat32Slices(truePredictions.Values, predictions, tolerance); err != nil {
 		t.Errorf("different predictions: %s", err.Error())
 	}
 }
@@ -625,11 +625,11 @@ func TestSKGradientBoostingClassifier(t *testing.T) {
 	}
 
 	// do predictions
-	predictions := make([]float64, csr.Rows()*model.NOutputGroups())
+	predictions := make([]float32, csr.Rows()*model.NOutputGroups())
 	model.PredictCSR(csr.RowHeaders, csr.ColIndexes, csr.Values, predictions, 0, 1)
 	// compare results
-	const tolerance = 1e-6
-	if err := util.AlmostEqualFloat64Slices(truePredictions.Values, predictions, tolerance); err != nil {
+	const tolerance = 1e-5
+	if err := util.AlmostEqualFloat32Slices(truePredictions.Values, predictions, tolerance); err != nil {
 		t.Errorf("different predictions: %s", err.Error())
 	}
 }
@@ -659,14 +659,14 @@ func TestSKIris(t *testing.T) {
 	}
 
 	// do predictions
-	predictions := make([]float64, csr.Rows()*model.NOutputGroups())
+	predictions := make([]float32, csr.Rows()*model.NOutputGroups())
 	model.PredictCSR(csr.RowHeaders, csr.ColIndexes, csr.Values, predictions, 0, 1)
 	// compare results
 	const tolerance = 1e-6
 	// compare results. Count number of mismatched values beacase of floating point
 	// comparisons problems: fval <= thresholds.
 	// I think this is because float32 format in sklearn X matrix
-	count, err := util.NumMismatchedFloat64Slices(truePredictions.Values, predictions, tolerance)
+	count, err := util.NumMismatchedFloat32Slices(truePredictions.Values, predictions, tolerance)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -706,11 +706,11 @@ func TestLGRandomForestIris(t *testing.T) {
 		t.Fatal(err)
 	}
 	// do predictions
-	predictions := make([]float64, csr.Rows()*model.NOutputGroups())
+	predictions := make([]float32, csr.Rows()*model.NOutputGroups())
 	model.PredictCSR(csr.RowHeaders, csr.ColIndexes, csr.Values, predictions, 0, 1)
 	// compare results
 	const tolerance = 1e-6
-	if err := util.AlmostEqualFloat64Slices(truePredictions.Values, predictions, tolerance); err != nil {
+	if err := util.AlmostEqualFloat32Slices(truePredictions.Values, predictions, tolerance); err != nil {
 		t.Errorf("different predictions: %s", err.Error())
 	}
 }
@@ -748,10 +748,10 @@ func TestXGDARTAgaricus(t *testing.T) {
 	}
 
 	// do predictions
-	predictions := make([]float64, csr.Rows())
+	predictions := make([]float32, csr.Rows())
 	model.PredictCSR(csr.RowHeaders, csr.ColIndexes, csr.Values, predictions, 10, 1)
 	// compare results
-	if err := util.AlmostEqualFloat64Slices(truePredictions.Values, predictions, 1e-5); err != nil {
+	if err := util.AlmostEqualFloat32Slices(truePredictions.Values, predictions, 1e-5); err != nil {
 		t.Fatalf("different predictions: %s", err.Error())
 	}
 }
@@ -781,7 +781,7 @@ func TestLGDARTBreastCancer(t *testing.T) {
 	}
 
 	// do predictions
-	predictions := make([]float64, test.Rows*model.NOutputGroups())
+	predictions := make([]float32, test.Rows*model.NOutputGroups())
 	err = model.PredictDense(test.Values, test.Rows, test.Cols, predictions, 0, 1)
 	if err != nil {
 		t.Fatal(err)
@@ -789,7 +789,7 @@ func TestLGDARTBreastCancer(t *testing.T) {
 
 	// compare results
 	const tolerance = 1e-6
-	if err := util.AlmostEqualFloat64Slices(truePredictions.Values, predictions, tolerance); err != nil {
+	if err := util.AlmostEqualFloat32Slices(truePredictions.Values, predictions, tolerance); err != nil {
 		t.Errorf("different predictions: %s", err.Error())
 	}
 }
@@ -820,7 +820,7 @@ func TestLGKDDCup99(t *testing.T) {
 	}
 
 	// do predictions
-	predictions := make([]float64, test.Rows*model.NOutputGroups())
+	predictions := make([]float32, test.Rows*model.NOutputGroups())
 	err = model.PredictDense(test.Values, test.Rows, test.Cols, predictions, 0, 1)
 	if err != nil {
 		t.Fatal(err)
@@ -828,7 +828,7 @@ func TestLGKDDCup99(t *testing.T) {
 
 	// compare results
 	const tolerance = 1e-6
-	if err := util.AlmostEqualFloat64Slices(truePredictions.Values, predictions, tolerance); err != nil {
+	if err := util.AlmostEqualFloat32Slices(truePredictions.Values, predictions, tolerance); err != nil {
 		t.Errorf("different predictions: %s", err.Error())
 	}
 }
@@ -857,7 +857,7 @@ func InnerBenchmarkLGKDDCup99(b *testing.B, nThreads int) {
 
 	// do benchmark
 	b.ResetTimer()
-	predictions := make([]float64, test.Rows*model.NOutputGroups())
+	predictions := make([]float32, test.Rows*model.NOutputGroups())
 	for i := 0; i < b.N; i++ {
 		model.PredictDense(test.Values, test.Rows, test.Cols, predictions, 0, nThreads)
 	}
@@ -893,16 +893,16 @@ func TestLGJsonBreastCancer(t *testing.T) {
 	}
 
 	// do predictions
-	predictions := make([]float64, test.Rows*model.NOutputGroups())
+	predictions := make([]float32, test.Rows*model.NOutputGroups())
 	err = model.PredictDense(test.Values, test.Rows, test.Cols, predictions, 0, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	util.SigmoidFloat64SliceInplace(predictions)
+	util.SigmoidFloat32SliceInplace(predictions)
 
 	// compare results
 	const tolerance = 1e-6
-	if err := util.AlmostEqualFloat64Slices(truePredictions.Values, predictions, tolerance); err != nil {
+	if err := util.AlmostEqualFloat32Slices(truePredictions.Values, predictions, tolerance); err != nil {
 		t.Errorf("different predictions: %s", err.Error())
 	}
 }

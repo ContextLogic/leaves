@@ -175,48 +175,48 @@ func TestConstructBitset(t *testing.T) {
 	check([]uint32{})
 }
 
-func TestSigmoidFloat64SliceInplace(t *testing.T) {
-	vec := [...]float64 {-1.0, -0.5, -0.25, 0.0, 0.25, 0.5, 1.0}
-	vecTrue := [...]float64 {0.26894142, 0.37754067, 0.4378235, 0.5, 0.5621765, 0.62245933, 0.73105858}
-	SigmoidFloat64SliceInplace(vec[:])
-	err := AlmostEqualFloat64Slices(vec[:], vecTrue[:], 1e-8)
+func TestSigmoidFloat32SliceInplace(t *testing.T) {
+	vec := [...]float32 {-1.0, -0.5, -0.25, 0.0, 0.25, 0.5, 1.0}
+	vecTrue := [...]float32 {0.26894142, 0.37754067, 0.4378235, 0.5, 0.5621765, 0.62245933, 0.73105858}
+	SigmoidFloat32SliceInplace(vec[:])
+	err := AlmostEqualFloat32Slices(vec[:], vecTrue[:], 1e-8)
 	if err != nil {
 		t.Error(err.Error())
 	}
 }
 
-func TestSoftmaxFloat64Slice(t *testing.T) {
-	compare := func(vec []float64, vecTrue []float64) {
-		res := make([]float64, len(vec))
-		SoftmaxFloat64Slice(vec, res, 0)
-		err := AlmostEqualFloat64Slices(res, vecTrue, 1e-8)
+func TestSoftmaxFloat32Slice(t *testing.T) {
+	compare := func(vec []float32, vecTrue []float32) {
+		res := make([]float32, len(vec))
+		SoftmaxFloat32Slice(vec, res, 0)
+		err := AlmostEqualFloat32Slices(res, vecTrue, 1e-8)
 		if err != nil {
 			t.Error(err.Error())
 		}
 	}
 
 	compare(
-		[]float64{0.25, 0.75},
-		[]float64{0.37754067, 0.62245933},
+		[]float32{0.25, 0.75},
+		[]float32{0.37754067, 0.62245933},
 	)
 
 	compare(
-		[]float64{0.0, 0.0},
-		[]float64{0.5, 0.5},
+		[]float32{0.0, 0.0},
+		[]float32{0.5, 0.5},
 	)
 
 	compare(
-		[]float64{1.0, 2.0, 3.0},
-		[]float64{0.09003057, 0.24472847, 0.66524096},
+		[]float32{1.0, 2.0, 3.0},
+		[]float32{0.09003057, 0.24472847, 0.66524096},
 	)
 
 	compare(
-		[]float64{10.0, 20.0, 30.0},
-		[]float64{2.06106005e-09, 4.53978686e-05, 9.99954600e-01},
+		[]float32{10.0, 20.0, 30.0},
+		[]float32{2.06106005e-09, 4.53978686e-05, 9.99954600e-01},
 	)
 
 	compare(
-		[]float64{},
-		[]float64{},
+		[]float32{},
+		[]float32{},
 	)
 }

@@ -3,7 +3,7 @@ package leaves
 import (
 	"math"
 
-	"github.com/dmitryikh/leaves/util"
+	"github.com/ContextLogic/leaves/util"
 )
 
 // xgEnsemble is XGBoost model (ensemble of trees)
@@ -12,8 +12,8 @@ type xgEnsemble struct {
 	MaxFeatureIdx    int
 	nRawOutputGroups int
 	TreeInfo         []int
-	BaseScore        float64
-	WeightDrop       []float64
+	BaseScore        float32
+	WeightDrop       []float32
 	// name contains the origin of the model (examples: 'xgboost.gbtree', 'xgboost.dart')
 	name string
 }
@@ -46,7 +46,7 @@ func (e *xgEnsemble) adjustNEstimators(nEstimators int) int {
 	return nEstimators
 }
 
-func (e *xgEnsemble) predictInner(fvals []float64, nEstimators int, predictions []float64, startIndex int) {
+func (e *xgEnsemble) predictInner(fvals []float32, nEstimators int, predictions []float32, startIndex int) {
 	for k := 0; k < e.nRawOutputGroups; k++ {
 		predictions[startIndex+k] = e.BaseScore
 		for i := 0; i < nEstimators; i++ {
@@ -57,8 +57,8 @@ func (e *xgEnsemble) predictInner(fvals []float64, nEstimators int, predictions 
 	}
 }
 
-func (e *xgEnsemble) resetFVals(fvals []float64) {
+func (e *xgEnsemble) resetFVals(fvals []float32) {
 	for j := 0; j < len(fvals); j++ {
-		fvals[j] = math.NaN()
+		fvals[j] = float32(math.NaN())
 	}
 }

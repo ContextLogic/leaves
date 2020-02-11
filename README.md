@@ -1,10 +1,10 @@
 # leaves
 
 [![version](https://img.shields.io/badge/version-0.8.0-yellow.svg)](https://semver.org)
-[![Build Status](https://travis-ci.org/dmitryikh/leaves.svg?branch=master)](https://travis-ci.org/dmitryikh/leaves)
-[![GoDoc](https://godoc.org/github.com/dmitryikh/leaves?status.png)](https://godoc.org/github.com/dmitryikh/leaves)
-[![Coverage Status](https://coveralls.io/repos/github/dmitryikh/leaves/badge.svg?branch=master)](https://coveralls.io/github/dmitryikh/leaves?branch=master)
-[![Go Report Card](https://goreportcard.com/badge/github.com/dmitryikh/leaves)](https://goreportcard.com/report/github.com/dmitryikh/leaves)
+[![Build Status](https://travis-ci.org/ContextLogic/leaves.svg?branch=master)](https://travis-ci.org/ContextLogic/leaves)
+[![GoDoc](https://godoc.org/github.com/ContextLogic/leaves?status.png)](https://godoc.org/github.com/ContextLogic/leaves)
+[![Coverage Status](https://coveralls.io/repos/github/ContextLogic/leaves/badge.svg?branch=master)](https://coveralls.io/github/ContextLogic/leaves?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/ContextLogic/leaves)](https://goreportcard.com/report/github.com/ContextLogic/leaves)
 
 ![Logo](logo.png)
 
@@ -39,7 +39,7 @@ _leaves_ is a library implementing prediction code for GBRT (Gradient Boosting R
 In order to start, go get this repository:
 
 ```sh
-go get github.com/dmitryikh/leaves
+go get github.com/ContextLogic/leaves
 ```
 
 Minimal example:
@@ -50,7 +50,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/dmitryikh/leaves"
+	"github.com/ContextLogic/leaves"
 )
 
 func main() {
@@ -62,7 +62,7 @@ func main() {
 	}
 
 	// 2. Do predictions!
-	fvals := []float64{1.0, 2.0, 3.0}
+	fvals := []float32{1.0, 2.0, 3.0}
 	p := model.PredictSingle(fvals, 0)
 	fmt.Printf("Prediction for %v: %f\n", fvals, p)
 }
@@ -72,7 +72,7 @@ In order to use XGBoost model, just change `leaves.LGEnsembleFromFile`, to `leav
 
 ## Documentation
 
-Documentation is hosted on godoc ([link](https://godoc.org/github.com/dmitryikh/leaves)). Documentation contains complex usage examples and full API reference. Some additional information about usage examples can be found in [leaves_test.go](leaves_test.go).
+Documentation is hosted on godoc ([link](https://godoc.org/github.com/ContextLogic/leaves)). Documentation contains complex usage examples and full API reference. Some additional information about usage examples can be found in [leaves_test.go](leaves_test.go).
 
 ## Compatibility
 

@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dmitryikh/leaves/transformation"
-	"github.com/dmitryikh/leaves/util"
+	"github.com/ContextLogic/leaves/transformation"
+	"github.com/ContextLogic/leaves/util"
 )
 
 type lgEnsembleJSON struct {
@@ -30,7 +30,7 @@ type lgTreeJSON struct {
 	NumCat    uint32 `json:"num_cat"`
 	// Unused fields:
 	// TreeIndex uint32  `json:"tree_index"`
-	// Shrinkage float64 `json:"shrinkage"`
+	// Shrinkage float32 `json:"shrinkage"`
 	RootRaw json.RawMessage `json:"tree_structure"`
 	Root    interface{}
 }
@@ -38,7 +38,7 @@ type lgTreeJSON struct {
 type lgNodeJSON struct {
 	SplitIndex   uint32 `json:"split_index"`
 	SplitFeature uint32 `json:"split_feature"`
-	// Threshold could be float64 (for numerical decision) or string (for categorical, example "10||100||400")
+	// Threshold could be float32 (for numerical decision) or string (for categorical, example "10||100||400")
 	Threshold     interface{}     `json:"threshold"`
 	DecisionType  string          `json:"decision_type"`
 	DefaultLeft   bool            `json:"default_left"`
@@ -121,7 +121,7 @@ func lgTreeFromReader(reader *bufio.Reader) (lgTree, error) {
 	}
 	numNodes := numLeaves - 1
 
-	leafValues, err := params.ToFloat64Slice("leaf_value")
+	leafValues, err := params.ToFloat32Slice("leaf_value")
 	if err != nil {
 		return t, err
 	}
@@ -148,7 +148,7 @@ func lgTreeFromReader(reader *bufio.Reader) (lgTree, error) {
 	if err != nil {
 		return t, err
 	}
-	thresholds, err := params.ToFloat64Slice("threshold")
+	thresholds, err := params.ToFloat32Slice("threshold")
 	if err != nil {
 		return t, err
 	}
@@ -457,7 +457,7 @@ func unmarshalTree(raw []byte) (lgTree, error) {
 
 	if value, ok := treeJSON.Root.(float64); ok {
 		// special case - constant value tree
-		t.leafValues = append(t.leafValues, value)
+		t.leafValues = append(t.leafValues, float32(value))
 		return t, nil
 	}
 
@@ -475,16 +475,16 @@ func unmarshalTree(raw []byte) (lgTree, error) {
 		if !ok {
 			return node, fmt.Errorf("unexpected Threshold type %T", nodeJSON.Threshold)
 		}
-		node = numericalNode(nodeJSON.SplitFeature, missingType, threshold, defaultType)
+		node = numericalNode(nodeJSON.SplitFeature, missingType, float32(threshold), defaultType)
 		if value, ok := nodeJSON.LeftChild.(float64); ok {
 			node.Flags |= leftLeaf
 			node.Left = uint32(len(t.leafValues))
-			t.leafValues = append(t.leafValues, value)
+			t.leafValues = append(t.leafValues, float32(value))
 		}
 		if value, ok := nodeJSON.RightChild.(float64); ok {
 			node.Flags |= rightLeaf
 			node.Right = uint32(len(t.leafValues))
-			t.leafValues = append(t.leafValues, value)
+			t.leafValues = append(t.leafValues, float32(value))
 		}
 		return node, nil
 	}
@@ -540,12 +540,12 @@ func unmarshalTree(raw []byte) (lgTree, error) {
 		if value, ok := nodeJSON.LeftChild.(float64); ok {
 			node.Flags |= leftLeaf
 			node.Left = uint32(len(t.leafValues))
-			t.leafValues = append(t.leafValues, value)
+			t.leafValues = append(t.leafValues, float32(value))
 		}
 		if value, ok := nodeJSON.RightChild.(float64); ok {
 			node.Flags |= rightLeaf
 			node.Right = uint32(len(t.leafValues))
-			t.leafValues = append(t.leafValues, value)
+			t.leafValues = append(t.leafValues, float32(value))
 		}
 		return node, nil
 	}

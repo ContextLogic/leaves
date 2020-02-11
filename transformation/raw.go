@@ -4,7 +4,7 @@ type TransformRaw struct {
 	NumOutputGroups int
 }
 
-func (t *TransformRaw) Transform(rawPredictions []float64, outputPredictions []float64, startIndex int) error {
+func (t *TransformRaw) Transform(rawPredictions []float32, outputPredictions []float32, startIndex int) error {
 	for i, v := range rawPredictions {
 		outputPredictions[startIndex+i] = v
 	}

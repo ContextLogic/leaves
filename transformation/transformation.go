@@ -1,7 +1,7 @@
 package transformation
 
 type Transform interface {
-	Transform(rawPredictions []float64, outputPredictions []float64, startIndex int) error
+	Transform(rawPredictions []float32, outputPredictions []float32, startIndex int) error
 	NOutputGroups() int
 	Type() TransformType
 	Name() string

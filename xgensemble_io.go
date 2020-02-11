@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dmitryikh/leaves/internal/xgbin"
-	"github.com/dmitryikh/leaves/transformation"
+	"github.com/ContextLogic/leaves/internal/xgbin"
+	"github.com/ContextLogic/leaves/transformation"
 )
 
 func xgSplitIndex(origNode *xgbin.Node) uint32 {
@@ -46,7 +46,7 @@ func xgTreeFromTreeModel(origTree *xgbin.TreeModel, numFeatures uint32) (lgTree,
 
 	if numNodes == 1 {
 		// special case - constant value tree
-		t.leafValues = append(t.leafValues, float64(origTree.Nodes[0].Info))
+		t.leafValues = append(t.leafValues, float32(origTree.Nodes[0].Info))
 		return t, nil
 	}
 
@@ -60,7 +60,7 @@ func xgTreeFromTreeModel(origTree *xgbin.TreeModel, numFeatures uint32) (lgTree,
 		if xgDefaultLeft(origNode) {
 			defaultType = defaultLeft
 		}
-		node = numericalNode(xgSplitIndex(origNode), missingType, float64(origNode.Info), defaultType)
+		node = numericalNode(xgSplitIndex(origNode), missingType, float32(origNode.Info), defaultType)
 
 		if origNode.CLeft < 0 {
 			return node, fmt.Errorf("logic error: got origNode.CLeft < 0")
@@ -71,12 +71,12 @@ func xgTreeFromTreeModel(origTree *xgbin.TreeModel, numFeatures uint32) (lgTree,
 		if xgIsLeaf(&origTree.Nodes[origNode.CLeft]) {
 			node.Flags |= leftLeaf
 			node.Left = uint32(len(t.leafValues))
-			t.leafValues = append(t.leafValues, float64(origTree.Nodes[origNode.CLeft].Info))
+			t.leafValues = append(t.leafValues, float32(origTree.Nodes[origNode.CLeft].Info))
 		}
 		if xgIsLeaf(&origTree.Nodes[origNode.CRight]) {
 			node.Flags |= rightLeaf
 			node.Right = uint32(len(t.leafValues))
-			t.leafValues = append(t.leafValues, float64(origTree.Nodes[origNode.CRight].Info))
+			t.leafValues = append(t.leafValues, float32(origTree.Nodes[origNode.CRight].Info))
 		}
 		return node, nil
 	}
@@ -153,7 +153,7 @@ func XGEnsembleFromReader(reader *bufio.Reader, loadTransformation bool) (*Ensem
 		return nil, fmt.Errorf("zero number of features")
 	}
 	e.MaxFeatureIdx = int(header.Param.NumFeatures) - 1
-	e.BaseScore = float64(header.Param.BaseScore)
+	e.BaseScore = float32(header.Param.BaseScore)
 
 	// reading gbtree
 	origModel, err := xgbin.ReadGBTreeModel(reader)
@@ -168,7 +168,7 @@ func XGEnsembleFromReader(reader *bufio.Reader, loadTransformation bool) (*Ensem
 		)
 	}
 
-	e.WeightDrop = make([]float64, origModel.Param.NumTrees)
+	e.WeightDrop = make([]float32, origModel.Param.NumTrees)
 	if header.NameGbm == "dart" {
 		// read additional float32 slice of weighs of dropped trees. Only for 'dart' models
 		weightDrop, err := xgbin.ReadFloat32Slice(reader)
@@ -183,7 +183,7 @@ func XGEnsembleFromReader(reader *bufio.Reader, loadTransformation bool) (*Ensem
 			)
 		}
 		for i, v := range weightDrop {
-			e.WeightDrop[i] = float64(v)
+			e.WeightDrop[i] = float32(v)
 		}
 	} else if header.NameGbm == "gbtree" {
 		// use 1.0 as default. 1.0 scale will not break down anything

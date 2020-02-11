@@ -10,7 +10,7 @@ import (
 
 // DenseMat is dense matrix data structure
 type DenseMat struct {
-	Values []float64
+	Values []float32
 	Cols   int
 	Rows   int
 }
@@ -18,7 +18,7 @@ type DenseMat struct {
 // DenseMatZero return DenseMat with shape `rows` by `cols` with all zero elements
 func DenseMatZero(rows int, cols int) DenseMat {
 	return DenseMat{
-		Values: make([]float64, rows*cols),
+		Values: make([]float32, rows*cols),
 		Cols:   cols,
 		Rows:   rows,
 	}
@@ -26,7 +26,7 @@ func DenseMatZero(rows int, cols int) DenseMat {
 
 // DenseMatFromArray converts arrays of `values` to DenseMat using shape
 // information `rows` and `cols`
-func DenseMatFromArray(values []float64, rows int, cols int) (DenseMat, error) {
+func DenseMatFromArray(values []float32, rows int, cols int) (DenseMat, error) {
 	mat := DenseMat{}
 	if len(values) != cols*rows {
 		return mat, fmt.Errorf("wrong dimensions")
@@ -41,7 +41,7 @@ func DenseMatFromArray(values []float64, rows int, cols int) (DenseMat, error) {
 type CSRMat struct {
 	RowHeaders []int
 	ColIndexes []int
-	Values     []float64
+	Values     []float32
 }
 
 // Rows returns number of rows in the matrix
@@ -54,7 +54,7 @@ func (m *CSRMat) Rows() int {
 
 // CSRMatFromArray converts arrays of `values` to CSRMat using shape information
 // `rows` and `cols`. See also DenseMatFromArray to store dense data in matrix
-func CSRMatFromArray(values []float64, rows int, cols int) (CSRMat, error) {
+func CSRMatFromArray(values []float32, rows int, cols int) (CSRMat, error) {
 	mat := CSRMat{}
 	if len(values) != cols*rows {
 		return mat, fmt.Errorf("wrong dimensions")
